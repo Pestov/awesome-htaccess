@@ -1,0 +1,409 @@
+# This .htaccess will help to make your website faster.
+# Author: Ilya Pestov @ipestov
+# Site: http://ipestov.com/trying-to-create-an-ideal-htaccess/
+# Source: https://github.com/Roosso/MyScriptics
+
+Options All -ExecCGI -Indexes -Includes +FollowSymLinks
+#Options -MultiViews
+
+
+# REWRITE ___________________
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteBase /
+	RewriteCond %{HTTP_HOST} ^example
+	RewriteRule (.*) http://www.example.com/$1 [R=301,L]
+	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/
+	RewriteRule ^index\.php$ http://www.example.com/ [R=301,L]
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>
+	
+	
+# REDIRECT __________________
+#	301 redirect
+# Redirect 301 /index.html /index.php
+#	http://www.example.com - URL to which we redirect requests
+# Is useful in cases when it is necessary to completely redirect people from one site to another.
+# Redirect / http://www.example.com
+<IfModule mod_rewrite.c>
+	# RewriteRule ^news/([^/\.]+)/?$ news.php?news=$1 [L]
+	# RewriteRule ^(.*\.((js)|(css)))$ plugin/GzipFile.php?file=$1 [QSA,NE,L]
+	# RewriteRule \.css$ plugin/GzipFile.php?file=$1
+	# RewriteRule \.js$ plugin/GzipFile.php?file=$1
+	
+	# Round brackets () are used to highlight groups of characters. In the future you can refer to them by number.
+	# The ^ symbol means start of line.
+	# The $ symbol indicates the end of the row.
+	# The . symbol stands for any character.
+	# The | symbol denotes alternative. For example, the expression "A|B" means "A or B".
+	# The ? is placed after the symbol (or group) that can be present or absent.
+	# The * is placed after the symbol (groups), which may be absent or present any number of times in a row.
+	# The + is the same as the * symbol with the only difference that the preceding character must be present at least once.
+	# The square brackets [] are used to enumerate the allowed characters.
+	# The square brackets [^] are used to enumerate the available symbols.
+	# The \ symbol is placed before the special characters, if they needed for itself is.
+	# Everything after a ' # ' is a comment.
+</IfModule>
+# RedirectMatch 301 /blog(.*) http://www.example.com/blog$1
+
+
+# SECURE ____________________
+<IfModule mod_ssl.c>
+	# SSLOptions +StrictRequire
+	# SSLRequireSSL
+	# SSLRequire %{HTTP_HOST} eq "example.com"
+</IfModule>
+<IfModule mod_rewrite.c>
+	# RewriteCond %{HTTPS} !on
+	# RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+	# RewriteCond %{SERVER_PORT} !^443
+	# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+	
+	#  $n (0 <= n <= 9) which provide access to the grouped parts (round brackets!)
+	# of pattern from the corresponding RewriteRule Directive (the only one which 
+	#follows the current set of RewriteCond directives). 
+	#  %n (1 <= n <= 9) which provide access to the grouped parts (round brackets!) 
+	#of template of the corresponding RewriteCond Directive in the current set of conditions.
+	#	%{NAME_OF_VARIABLE} - where NAME_OF_VARIABLE can be one of below variables
+	#  HTTP_USER_AGENT - contains information about the type and version of browser and operating system the visitor.
+	#  HTTP_REFERER - address of the page from which a user came to this page.
+	#	HTTP_COOKIE	 - list of COOKIES sent by the browser.
+	#	HTTP_FORWARDED	- IP address of a client connecting to a web server through an HTTP proxy or load balancer.
+	#	HTTP_HOST -	address of the server.
+	#	HTTP_ACCEPT - describes the client's preferences regarding the type of document.
+	#	REMOTE_ADDR	- client's IP address.
+	#	REMOTE_HOST	- client's HOST. 
+	#	REMOTE_IDENT - name of remote user. Has the format name.host. Example: starter.www.ipestov.com.
+	#	REMOTE_USER	- it's same as REMOTE_IDENT, but contains only the name. Example: starter.
+	#	REQUEST_METHOD - defines the request type (GET or POST). Should definitely be reviewed because it determines the way of processing information.
+	#	SCRIPT_FILENAME -	full path to ther webpage on server.
+	#	PATH_INFO -	contains everything passed to the script.
+	#	QUERY_STRING - contains a line, passed as a request to invoke a CGI script.
+	#	AUTH_TYPE - is used to identify the user.
+	#	DOCUMENT_ROOT - contains the path to root directory of server.
+	#	SERVER_ADMIN - email address of server's owner that was specified during installation.
+	#	SERVER_NAME	- address of server.
+	#	SERVER_ADDR	- IP-adress of your site.
+	#	SERVER_PORT - port on which Apache runs.
+	#	SERVER_PROTOCOL -	version of HTTP.
+	#	SERVER_SOFTWARE - name of web server. Example: Apache/1.3.2 (Unix).
+	#	TIME_YEAR TIME_MON TIME_DAY TIME_HOUR TIME_MIN TIME_SEC TIME_WDAY TIME - variables for work with time if different formats.
+	#	API_VERSION	- version of API of Apache mobule (internal interface between server and module) in the current build of the server that is defined in include/ap_mmn.h.
+	#	THE_REQUEST - full line of an HTTP request sent by the browser to the server (i.e., "GET /index.html HTTP/1.1"). It does not include any additional headers sent by the browser.
+	#	REQUEST_URI - resource requested in the HTTP request line.
+	#	REQUEST_FILENAME - full path in the server file system to the file or script matching this request.
+	#	IS_SUBREQ - will contain the "true" if the request is executing at the moment as a subrequest and "false" otherwise. Subqueries can be generated by modules that need to deal with additional files or URIs in order to carry out its own tasks.
+	
+	
+	
+
+	# Attention!
+	# This configuration file can produce side requests to the index file of your website
+	# in the cases where in layout or your scripts contain errors or references to nonexistent files or folders.
+	# Such treatment in a large number can cause the load on your web server. 1 error = 1 extra treatment.
+	# Be careful. Before using this file, check the files access.log and error.log generated by your Apache server.
+	# If you find bugs in your scripts, correct them before using on production server.
+	
+	#  To block any request that tries to mess up the URL using base64_encode
+	RewriteCond %{QUERY_STRING} base64_encode[^(]*\([^)]*\) [OR]
+	#	To block any request that contains a <script> tag in URL
+	RewriteCond %{QUERY_STRING} (<|%3C)([^s]*s)+cript.*(>|%3E) [NC,OR]
+	#	To block any request that tries to set the value of a global variable in PHP via URL
+	RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+	#	Block any request that tries to change _REQUEST variable via URL
+	RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+	#	Redirect blocked requests
+	RewriteRule .* index.php [F]
+	
+	#	and the requested path doesn't match the path to the physical file
+	RewriteCond %{REQUEST_FILENAME} !-f
+	#	and the requested path does not match the path to the physical folder
+	RewriteCond %{REQUEST_FILENAME} !-d
+	#	then to redirect the request to the script index.php
+	RewriteRule .* index.php [L]
+	
+	RedirectMatch 301 regexp /error410.html
+</IfModule>
+
+
+# HOTLINKING ________________
+<IfModule mod_rewrite.c>
+	# RewriteCond %{HTTP_REFERER} !^$
+	# RewriteCond %{HTTP_REFERER} !^http://([ -a-z0-9]  \.)?example\.com [NC]
+	# RewriteRule \.(gif|jpe?g|png)$ - [F,NC,L]
+</IfModule>
+
+
+# HANDLER ___________________
+AddHandler application/x-httpd-php .html
+AddHandler cgi-script .pl .py .jsp .asp .htm .shtml .sh .cgi
+AddType application/x-javascript .js
+AddType application/json .json
+AddType text/css .css
+AddType text/xml .xml
+#	Audio
+AddType audio/ogg .oga .ogg
+AddType audio/mp4 .m4a .f4a .f4b
+#	Video
+AddType video/ogg .ogv
+AddType video/mp4 .mp4 .m4v .f4v .f4p
+AddType video/webm .webm
+AddType video/x-flv .flv
+#	SVG
+AddType image/svg+xml .svg .svgz
+AddEncoding gzip .svgz
+#	Webfonts
+AddType application/vnd.ms-fontobject .eot
+AddType application/x-font-ttf .ttf .ttc
+AddType font/opentype .otf
+AddType application/x-font-woff .woff
+#	Assorted types
+AddType image/x-icon .ico
+AddType image/webp .webp
+AddType text/cache-manifest .appcache .manifest
+AddType text/x-component .htc
+AddType application/xml .rss .atom .xml .rdf
+AddType application/x-chrome-extension .crx
+AddType application/x-opera-extension .oex
+AddType application/x-xpinstall .xpi
+AddType application/octet-stream .safariextz
+AddType application/x-web-app-manifest+json .webapp
+AddType text/x-vcard .vcf
+AddType application/x-shockwave-flash .swf
+AddType text/vtt .vtt
+AddType application/octet-stream .doc .mov .avi .pdf .xls .rar .zip .mp3 .wmv .ppt .tar .gz .docx .xlsx
+# ForceType application/x-httpd-php
+
+
+# INDEX FILE ________________
+DirectoryIndex index.php
+
+
+# GZIP ______________________
+<IfModule mod_gzip.c>
+	mod_gzip_on         Yes
+	mod_gzip_dechunk    Yes
+	mod_gzip_item_include file		\.(html?|txt|css|js|php|pl)$
+	mod_gzip_item_include mime		^text\.*
+	mod_gzip_item_include mime		^application/x-javascript.*
+	mod_gzip_item_include mime		^application/x-font-woff.*
+	mod_gzip_item_exclude mime		^image\.*
+	mod_gzip_item_exclude rspheader	^Content-Encoding:.*gzip.*
+</IfModule>
+<ifModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE text/html text/plain text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript application/x-font-woff image/jpg image/jpeg
+</ifModule>
+
+
+# PHP _______________________
+php_value	upload_max_filesize	32M
+php_value	post_max_size		10M
+php_value	default_charset utf-8
+php_flag	magic_quotes_gpc Off
+php_flag	register_globals Off
+php_flag	short_open_tag On
+# php_flag	display_errors on
+# php_value	max_input_time 200
+# php_value session.name sid
+
+php_value	error_reporting 0
+php_flag	display_startup_errors off
+php_flag	display_errors off
+php_flag	html_errors off
+php_flag	log_errors off
+php_flag	ignore_repeated_errors on
+php_flag	ignore_repeated_source on
+# php_value	log_errors_max_len 1024
+php_flag	report_memleaks off
+php_flag	track_errors off
+php_value	docref_root 0
+php_value	docref_ext 0
+# php_value	error_log /tmp/php_error.log
+# php_value error_prepend_string " "
+# php_value error_append_string " "
+
+<Files php_error.log>
+	Order allow,deny
+	Deny from all
+	Satisfy All
+</Files>
+
+<IfModule php5_module>
+	# php_value session.cookie_httponly true
+</IfModule>
+
+
+# XDEBUG ___________________
+#	Settings for XDebug
+#php_flag	xdebug.profiler_enable On
+#php_flag	xdebug.extended_info On
+#php_flag	xdebug.remote_enable off
+#php_flag	xdebug.auto_trace off
+
+
+# OTHER SETTINGS ____________
+<IfModule mod_setenvif.c>
+	SetEnv TZ Europe/Moscow
+</IfModule>
+ServerSignature Off
+# AddDefaultCharset UTF-8
+# AddCharset utf-8 .atom .css .js .json .rss .vtt .xml
+
+
+# CACHE AND Headers _________
+<ifModule mod_headers.c>
+	<FilesMatch "\.(html|htm)$">
+		Header set Cache-Control "max-age=43200"
+	</FilesMatch>
+	<FilesMatch "\.(js|css|txt)$">
+		Header set Cache-Control "max-age=604800"
+	</FilesMatch>
+	<FilesMatch "\.(flv|swf|ico|gif|jpg|jpeg|png|jpe?g)$">
+		Header set Cache-Control "max-age=2592000"
+	</FilesMatch>
+	<FilesMatch "\.(pl|php|cgi|spl|scgi|fcgi)$">
+		Header unset Cache-Control
+	</FilesMatch>
+	<FilesMatch "\.(ttf|ttc|otf|eot|woff|font.css)$">
+		Header set Access-Control-Allow-Origin "*"
+	</FilesMatch>
+	<FilesMatch "\.(js|css|gif|png|jpe?g|pdf|xml|oga|ogg|m4a|ogv|mp4|m4v|webm|svg|svgz|eot|ttf|otf|woff|ico|webp|appcache|manifest|htc|crx|oex|xpi|safariextz|vcf)$" >
+		Header unset X-UA-Compatible
+	</FilesMatch>
+</IfModule>
+<ifModule mod_expires.c>
+	ExpiresActive On
+	ExpiresDefault "access plus 5 seconds"
+	ExpiresByType image/x-icon "access plus 2592000 seconds"
+	ExpiresByType image/jpeg "access plus 2592000 seconds"
+	ExpiresByType image/png "access plus 2592000 seconds"
+	ExpiresByType image/gif "access plus 2592000 seconds"
+	ExpiresByType video/ogg "access plus 1 month"
+	ExpiresByType audio/ogg "access plus 1 month"
+	ExpiresByType video/mp4 "access plus 1 month"
+	ExpiresByType video/webm "access plus 1 month"
+	ExpiresByType application/x-shockwave-flash "access plus 2592000 seconds"
+	ExpiresByType text/css "access plus 604800 seconds"
+	ExpiresByType text/javascript "access plus 604800 seconds"
+	ExpiresByType application/javascript "access plus 604800 seconds"
+	ExpiresByType application/x-javascript "access plus 604800 seconds"
+	ExpiresByType text/html "access plus 43200 seconds"
+	ExpiresByType application/xhtml+xml "access plus 600 seconds"
+	ExpiresByType text/xml "access plus 600 seconds"
+	ExpiresByType application/xml "access plus 600 seconds"
+	ExpiresByType application/json "access plus 600 seconds"
+	ExpiresByType application/rss+xml "access plus 1 hour"
+	ExpiresByType application/atom+xml "access plus 1 hour"
+	ExpiresByType text/x-component "access plus 1 week"
+	ExpiresByType application/x-font-ttf "access plus 1 month"
+	ExpiresByType font/opentype "access plus 1 month"
+	ExpiresByType application/x-font-woff "access plus 1 month"
+	ExpiresByType image/svg+xml "access plus 1 month"
+	ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
+</ifModule>
+
+
+#	Bad Rquest
+ErrorDocument 400 /index.php?page=e400
+
+#	Authorization Required
+ErrorDocument 401 /index.php?page=e401
+
+#	Forbidden
+ErrorDocument 403 /index.php?page=e403
+
+#	Not found
+ErrorDocument 404 /index.php?page=e404
+
+#	Method Not Allowed
+ErrorDocument 405 /index.php?page=e405
+
+#	Request Timed Out
+ErrorDocument 408 /index.php?page=e408
+
+#	Request URI Too Long
+ErrorDocument 414 /index.php?page=notfound
+
+#	Internal Server Erro
+ErrorDocument 500 /index.php?page=notfound
+
+#	Not Implemented
+ErrorDocument 501 /index.php?page=notfound
+
+#	Bad Gateway 
+ErrorDocument 502 /index.php?page=notfound
+
+#	Service Unavailable 
+ErrorDocument 503 /index.php?page=notfound
+
+#	Gateway Timeout
+ErrorDocument 504 /index.php?page=notfound
+
+# anti traffic
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteCond %{REQUEST_URI} !^/403.php$
+	RewriteCond %{HTTP_USER_AGENT} .*Slurp.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Ask\sJeeves.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*HP\sWeb\sPrintSmart.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*HTTrack.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*IDBot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Indy\sLibrary.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*ListChecker.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*MSIECrawler.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*NetCache.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Nutch.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*RPT-HTTPClient.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*rulinki\.ru.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Twiceler.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*WebAlta.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Webster\sPro.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*www\.cys\.ru.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Wysigot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Yeti.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Accoona.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*CazoodleBot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*CFNetwork.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*ConveraCrawler.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*DISCo.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Download\sMaster.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*FAST\sMetaWeb\sCrawler.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Flexum\sspider$ [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Gigabot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*HTMLParser.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*ia_archiver.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*ichiro.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*IRLbot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Java.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*km\.ru\sbot$ [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*kmSearchBot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*libwww-perl.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Lupa\.ru.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*LWP::Simple.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*lwp-trivial.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Missigua.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*MJ12bot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*msnbot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*msnbot-media.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Offline\sExplorer.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*OmniExplorer_Bot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*PEAR.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*psbot.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Python.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*rulinki\.ru.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*SMILE.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Speedy.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Teleport\sPro.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*TurtleScanner.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*voyager.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Webalta.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*WebCopier.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*WebData.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*WebZIP.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Wget.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Yanga.* [OR]
+	RewriteCond %{HTTP_USER_AGENT} .*Yeti.*
+	RewriteRule .* /403.php [F]
+<IfModule>
